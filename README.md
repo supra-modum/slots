@@ -1,2 +1,2 @@
 # mascot-test
-5x3 slot machine
+5x3 Slot Machine Game
