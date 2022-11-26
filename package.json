@@ -2,8 +2,12 @@
   "name": "slot-machine",
   "version": "1.0.0",
   "description": "5x3 Slot Machine Game built with Pixi.js and TypeScript",
-  "main": "index.ts",
   "scripts": {
+    "start": "parcel serve src/index.html --open --no-cache --no-source-maps",
+    "build": "npm run format && npm run clean && parcel build src/index.html",
+    "clean": "rimraf dist",
+    "format": "prettier --write src",
+    "check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,6 +24,8 @@
     "@parcel/transformer-sass": "^2.8.0",
     "parcel": "^2.8.0",
     "prettier": "^2.8.0",
+    "punycode": "^1.4.1",
+    "querystring-es3": "^0.2.1",
     "rimraf": "^3.0.2",
     "typescript": "^4.9.3"
   },
