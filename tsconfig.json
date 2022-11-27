@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "lib": ["es6", "dom"],
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "module": "ESNext",
+    "target": "es2017",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+
+  },
+  "include": [
+    "./src/**/*.ts",
+    "assets"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
