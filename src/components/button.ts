@@ -1,7 +1,7 @@
 import { Application, Assets, Sprite, Texture } from 'pixi.js';
-
 import ActiveButton from '../../assets/spin-button.png';
 import HoverButton from '../../assets/spin-button-hover.png';
+import { down, over, $isPointerDown, $isPointerOver } from './model';
 
 const activeBtn = Assets.load(ActiveButton);
 const hoverBtn = Texture.from(HoverButton);
@@ -24,14 +24,14 @@ export const loadActiveBtn = (app: Application, spin: () => void) => {
         .on('pointerout', onButtonOut);
 
       function onButtonDown() {
-        this.isdown = true;
+        down(true);
         this.texture = hoverBtn;
         spin();
       }
 
       function onButtonUp() {
-        this.isdown = false;
-        if (this.isOver) {
+        down(false);
+        if ($isPointerOver.getState() === true) {
           this.texture = hoverBtn;
         } else {
           this.texture = texture;
@@ -39,7 +39,7 @@ export const loadActiveBtn = (app: Application, spin: () => void) => {
       }
 
       function onButtonOver() {
-        this.isOver = true;
+        over(true);
         if (this.isdown) {
           return;
         }
@@ -47,8 +47,8 @@ export const loadActiveBtn = (app: Application, spin: () => void) => {
       }
 
       function onButtonOut() {
-        this.isOver = false;
-        if (this.isdown) {
+        over(false);
+        if ($isPointerDown.getState() === true) {
           return;
         }
         this.texture = texture;

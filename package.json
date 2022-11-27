@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@pixi/filter-blur": "^7.0.4",
+    "effector": "^22.4.0",
     "pixi.js": "^7.0.4"
   }
 }
