@@ -17,11 +17,11 @@ $isPlusPointerOver.on(overPlusStakesEvent, (state) => !state);
 $isMinusPointerDown.on(downMinusStakesEvent, (state) => !state);
 $isMinusPointerOver.on(overMinusStakesEvent, (state) => !state);
 
-// stakes stores and events
+// wip stakes stores and events
 export const updateStake = createEvent();
 export const $stakesStore = createStore(0).on(
   updateStake,
   (state) => state + 1,
 );
 
-$stakesStore.watch((state) => console.log(state));
+// $stakesStore.watch((state) => console.log(state));

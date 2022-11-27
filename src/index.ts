@@ -1,8 +1,6 @@
 import * as pixi from 'pixi.js';
 import * as utils from './utils';
 import {
-  downMinusStakesEvent,
-  overMinusStakesEvent,
   updateStake,
 } from './store/stakes';
 import { downSpinEvent, overSpinEvent } from './store/spin';
@@ -18,8 +16,6 @@ import {
   Peach,
   SpinDefault,
   SpinHover,
-  MinusDefault,
-  MinusHover,
 } from './manifest';
 import {
   stake1,
@@ -31,6 +27,7 @@ import {
 } from './components/StakeText';
 import { createPlusButton } from './components/PlusButton';
 import { createButton } from './components/Button';
+import { createMinusButton } from './components/MinusButton';
 
 const app = new pixi.Application({
   view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -125,37 +122,36 @@ function onAssetsLoaded() {
   });
 
   let num = 0;
-  let stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
 
+  // add stake value text
+  const stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
   stakeTxt[num].x = 260;
   stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
   app.stage.addChild(stakeTxt[num]);
 
+  // create and return plus button
   const plus = createPlusButton({ app });
+
+  // create and return minus button
+  const minus = createMinusButton({ app });
+
   plus.on('click', () => {
     if (num < utils.STAKE_VALUES.length - 1) {
       updateStake();
       stakeTxt[num].destroy();
-
       num++;
+
       stakeTxt[num].x = 260;
       stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
       app.stage.addChild(stakeTxt[num]);
     } else if (num === utils.STAKE_VALUES.length - 1) {
-      return;
+      num = utils.STAKE_VALUES.length - 1;
     }
   });
 
-  // add minus button
-  createButton({
-    x: 200,
-    y: 600,
-    app,
-    image: MinusDefault,
-    hover: MinusHover,
-    down: downMinusStakesEvent,
-    over: overMinusStakesEvent,
-    action: null,
+  // TODO: update stake on minus click
+  minus.on('click', () => {
+    console.log(num);
   });
 
   let running = false;
