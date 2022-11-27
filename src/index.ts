@@ -1,5 +1,4 @@
 import * as pixi from 'pixi.js';
-
 import Apple from '../assets/apple.png';
 import Bananas from '../assets/bananas.png';
 import Chili from '../assets/chili.png';
@@ -9,21 +8,23 @@ import Eggplant from '../assets/eggplant.png';
 import Taco from '../assets/taco.png';
 import Strawberry from '../assets/strawberry.png';
 import Peach from '../assets/peach.png';
+import PlusDefault from '../assets/plus-default.png';
+import PlusHover from '../assets/plus-hover.png';
+import SpinDefault from '../assets/spin-default.png';
+import SpinHover from '../assets/spin-hover.png';
 
+import Constants from './utils/constants';
 import lerp from './utils/lerp';
 import backout from './utils/backout';
-
-import { loadActiveBtn } from './components/button';
-
-const BG_COLOR = 0xddffab;
-const REEL_WIDTH = 180;
-const SYMBOL_SIZE = 128;
+import { createButton } from './components/Button';
+import { downStakesEvent, overStakesEvent } from './store/stakes';
+import { downSpinEvent, overSpinEvent } from './store/spin';
 
 const app = new pixi.Application({
   view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
-  background: BG_COLOR,
-  width: 1280,
-  height: 640,
+  background: Constants.BG_COLOR,
+  width: Constants.APP_WIDTH,
+  height: Constants.APP_HEIGHT,
   antialias: true,
 });
 
@@ -60,7 +61,7 @@ function onAssetsLoaded() {
 
   for (let i = 0; i < 5; i++) {
     const rc = new pixi.Container();
-    rc.x = i * REEL_WIDTH;
+    rc.x = i * Constants.REEL_WIDTH;
     reelContainer.addChild(rc);
 
     const reel = {
@@ -81,12 +82,12 @@ function onAssetsLoaded() {
         slotTextures[Math.floor(Math.random() * slotTextures.length)],
       );
       // Scale the symbol to fit symbol area.
-      symbol.y = j * SYMBOL_SIZE;
+      symbol.y = j * Constants.SYMBOL_SIZE;
       symbol.scale.x = symbol.scale.y = Math.min(
-        SYMBOL_SIZE / symbol.width,
-        SYMBOL_SIZE / symbol.height,
+        Constants.SYMBOL_SIZE / symbol.width,
+        Constants.SYMBOL_SIZE / symbol.height,
       );
-      symbol.x = Math.round((SYMBOL_SIZE - symbol.width) / 2);
+      symbol.x = Math.round((Constants.SYMBOL_SIZE - symbol.width) / 2);
       reel.symbols.push(symbol);
       rc.addChild(symbol);
     }
@@ -97,8 +98,29 @@ function onAssetsLoaded() {
   reelContainer.y = 200;
   reelContainer.x = 210;
 
-  // Load spin button
-  loadActiveBtn(app, startPlay);
+  // add spin (start game) button
+  createButton({
+    x: Constants.APP_WIDTH / 2,
+    y: 600,
+    app,
+    image: SpinDefault,
+    hover: SpinHover,
+    down: downSpinEvent,
+    over: overSpinEvent,
+    action: startPlay,
+  });
+
+  // add plus button
+  createButton({
+    x: 240,
+    y: 600,
+    app,
+    image: PlusDefault,
+    hover: PlusHover,
+    down: downStakesEvent,
+    over: overStakesEvent,
+    action: null,
+  });
 
   let running = false;
 
@@ -142,17 +164,19 @@ function onAssetsLoaded() {
       for (let j = 0; j < r.symbols.length; j++) {
         const s = r.symbols[j];
         const prevy = s.y;
-        s.y = ((r.position + j) % r.symbols.length) * SYMBOL_SIZE - SYMBOL_SIZE;
-        if (s.y < 0 && prevy > SYMBOL_SIZE) {
+        s.y =
+          ((r.position + j) % r.symbols.length) * Constants.SYMBOL_SIZE -
+          Constants.SYMBOL_SIZE;
+        if (s.y < 0 && prevy > Constants.SYMBOL_SIZE) {
           // Detect going over and swap a texture.
           // This should in proper product be determined from some logical reel.
           s.texture =
             slotTextures[Math.floor(Math.random() * slotTextures.length)];
           s.scale.x = s.scale.y = Math.min(
-            SYMBOL_SIZE / s.texture.width,
-            SYMBOL_SIZE / s.texture.height,
+            Constants.SYMBOL_SIZE / s.texture.width,
+            Constants.SYMBOL_SIZE / s.texture.height,
           );
-          s.x = Math.round((SYMBOL_SIZE - s.width) / 2);
+          s.x = Math.round((Constants.SYMBOL_SIZE - s.width) / 2);
         }
       }
     }
