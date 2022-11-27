@@ -13,9 +13,9 @@
     "experimentalDecorators": true,
 
   },
-  // Folder for your code
   "include": [
-    "./src/**/*"
+    "./src/**/*.ts",
+    "assets"
   ],
   "exclude": [
     "node_modules"
