@@ -1,10 +1,27 @@
 import { createEvent, createStore } from 'effector';
 
-const $isPointerDown = createStore<boolean>(false);
-const $isPointerOver = createStore<boolean>(false);
+// button stores and events
+const $isPlusPointerDown = createStore<boolean>(false);
+const $isPlusPointerOver = createStore<boolean>(false);
+const $isMinusPointerDown = createStore<boolean>(false);
+const $isMinusPointerOver = createStore<boolean>(false);
 
-export const downStakesEvent = createEvent<boolean>();
-export const overStakesEvent = createEvent<boolean>();
+export const downPlusStakesEvent = createEvent<boolean>();
+export const overPlusStakesEvent = createEvent<boolean>();
+export const downMinusStakesEvent = createEvent<boolean>();
+export const overMinusStakesEvent = createEvent<boolean>();
 
-$isPointerDown.on(downStakesEvent, (state) => !state);
-$isPointerOver.on(overStakesEvent, (state) => !state);
+$isPlusPointerDown.on(downPlusStakesEvent, (state) => !state);
+$isPlusPointerOver.on(overPlusStakesEvent, (state) => !state);
+
+$isMinusPointerDown.on(downMinusStakesEvent, (state) => !state);
+$isMinusPointerOver.on(overMinusStakesEvent, (state) => !state);
+
+// stakes stores and events
+export const updateStake = createEvent();
+export const $stakesStore = createStore(0).on(
+  updateStake,
+  (state) => state + 1,
+);
+
+$stakesStore.watch((state) => console.log(state));

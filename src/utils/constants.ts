@@ -1,4 +1,4 @@
-enum Constants {
+export enum Constants {
   BG_COLOR = 0xddffab,
   REEL_WIDTH = 180,
   SYMBOL_SIZE = 128,
@@ -6,4 +6,4 @@ enum Constants {
   APP_HEIGHT = 640,
 }
 
-export default Constants;
+export const STAKE_VALUES = [1, 5, 10, 25, 50, 100];

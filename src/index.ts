@@ -1,30 +1,42 @@
 import * as pixi from 'pixi.js';
-import Apple from '../assets/apple.png';
-import Bananas from '../assets/bananas.png';
-import Chili from '../assets/chili.png';
-import Croissant from '../assets/croissant.png';
-import Donut from '../assets/donut.png';
-import Eggplant from '../assets/eggplant.png';
-import Taco from '../assets/taco.png';
-import Strawberry from '../assets/strawberry.png';
-import Peach from '../assets/peach.png';
-import PlusDefault from '../assets/plus-default.png';
-import PlusHover from '../assets/plus-hover.png';
-import SpinDefault from '../assets/spin-default.png';
-import SpinHover from '../assets/spin-hover.png';
-
-import Constants from './utils/constants';
-import lerp from './utils/lerp';
-import backout from './utils/backout';
-import { createButton } from './components/Button';
-import { downStakesEvent, overStakesEvent } from './store/stakes';
+import * as utils from './utils';
+import {
+  downMinusStakesEvent,
+  overMinusStakesEvent,
+  updateStake,
+} from './store/stakes';
 import { downSpinEvent, overSpinEvent } from './store/spin';
+import {
+  Apple,
+  Bananas,
+  Chili,
+  Croissant,
+  Donut,
+  Eggplant,
+  Taco,
+  Strawberry,
+  Peach,
+  SpinDefault,
+  SpinHover,
+  MinusDefault,
+  MinusHover,
+} from './manifest';
+import {
+  stake1,
+  stake5,
+  stake10,
+  stake25,
+  stake50,
+  stake100,
+} from './components/StakeText';
+import { createPlusButton } from './components/PlusButton';
+import { createButton } from './components/Button';
 
 const app = new pixi.Application({
   view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
-  background: Constants.BG_COLOR,
-  width: Constants.APP_WIDTH,
-  height: Constants.APP_HEIGHT,
+  background: utils.Constants.BG_COLOR,
+  width: utils.Constants.APP_WIDTH,
+  height: utils.Constants.APP_HEIGHT,
   antialias: true,
 });
 
@@ -39,6 +51,8 @@ pixi.Assets.load([
   Strawberry,
   Peach,
 ]).then(onAssetsLoaded);
+
+const tweening: any[] = [];
 
 // onAssetsLoaded handler builds the example.
 function onAssetsLoaded() {
@@ -61,7 +75,7 @@ function onAssetsLoaded() {
 
   for (let i = 0; i < 5; i++) {
     const rc = new pixi.Container();
-    rc.x = i * Constants.REEL_WIDTH;
+    rc.x = i * utils.Constants.REEL_WIDTH;
     reelContainer.addChild(rc);
 
     const reel = {
@@ -82,12 +96,12 @@ function onAssetsLoaded() {
         slotTextures[Math.floor(Math.random() * slotTextures.length)],
       );
       // Scale the symbol to fit symbol area.
-      symbol.y = j * Constants.SYMBOL_SIZE;
+      symbol.y = j * utils.Constants.SYMBOL_SIZE;
       symbol.scale.x = symbol.scale.y = Math.min(
-        Constants.SYMBOL_SIZE / symbol.width,
-        Constants.SYMBOL_SIZE / symbol.height,
+        utils.Constants.SYMBOL_SIZE / symbol.width,
+        utils.Constants.SYMBOL_SIZE / symbol.height,
       );
-      symbol.x = Math.round((Constants.SYMBOL_SIZE - symbol.width) / 2);
+      symbol.x = Math.round((utils.Constants.SYMBOL_SIZE - symbol.width) / 2);
       reel.symbols.push(symbol);
       rc.addChild(symbol);
     }
@@ -96,11 +110,11 @@ function onAssetsLoaded() {
   app.stage.addChild(reelContainer);
 
   reelContainer.y = 200;
-  reelContainer.x = 210;
+  reelContainer.x = 200;
 
   // add spin (start game) button
   createButton({
-    x: Constants.APP_WIDTH / 2,
+    x: utils.Constants.APP_WIDTH / 2,
     y: 600,
     app,
     image: SpinDefault,
@@ -110,15 +124,37 @@ function onAssetsLoaded() {
     action: startPlay,
   });
 
-  // add plus button
+  let num = 0;
+  let stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
+
+  stakeTxt[num].x = 260;
+  stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
+  app.stage.addChild(stakeTxt[num]);
+
+  const plus = createPlusButton({ app });
+  plus.on('click', () => {
+    if (num < utils.STAKE_VALUES.length - 1) {
+      updateStake();
+      stakeTxt[num].destroy();
+
+      num++;
+      stakeTxt[num].x = 260;
+      stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
+      app.stage.addChild(stakeTxt[num]);
+    } else if (num === utils.STAKE_VALUES.length - 1) {
+      return;
+    }
+  });
+
+  // add minus button
   createButton({
-    x: 240,
+    x: 200,
     y: 600,
     app,
-    image: PlusDefault,
-    hover: PlusHover,
-    down: downStakesEvent,
-    over: overStakesEvent,
+    image: MinusDefault,
+    hover: MinusHover,
+    down: downMinusStakesEvent,
+    over: overMinusStakesEvent,
     action: null,
   });
 
@@ -133,14 +169,15 @@ function onAssetsLoaded() {
       const extra = Math.floor(Math.random() * 3);
       const target = r.position + 10 + i * 5 + extra;
       const time = 2500 + i * 600 + extra * 600;
-      tweenTo(
+      utils.tweenToFunction(
         r,
         'position',
         target,
         time,
-        backout(0.5),
+        utils.backout(0.5),
         null,
         i === reels.length - 1 ? reelsComplete : null,
+        tweening,
       );
     }
   }
@@ -165,61 +202,35 @@ function onAssetsLoaded() {
         const s = r.symbols[j];
         const prevy = s.y;
         s.y =
-          ((r.position + j) % r.symbols.length) * Constants.SYMBOL_SIZE -
-          Constants.SYMBOL_SIZE;
-        if (s.y < 0 && prevy > Constants.SYMBOL_SIZE) {
+          ((r.position + j) % r.symbols.length) * utils.Constants.SYMBOL_SIZE -
+          utils.Constants.SYMBOL_SIZE;
+        if (s.y < 0 && prevy > utils.Constants.SYMBOL_SIZE) {
           // Detect going over and swap a texture.
           // This should in proper product be determined from some logical reel.
           s.texture =
             slotTextures[Math.floor(Math.random() * slotTextures.length)];
           s.scale.x = s.scale.y = Math.min(
-            Constants.SYMBOL_SIZE / s.texture.width,
-            Constants.SYMBOL_SIZE / s.texture.height,
+            utils.Constants.SYMBOL_SIZE / s.texture.width,
+            utils.Constants.SYMBOL_SIZE / s.texture.height,
           );
-          s.x = Math.round((Constants.SYMBOL_SIZE - s.width) / 2);
+          s.x = Math.round((utils.Constants.SYMBOL_SIZE - s.width) / 2);
         }
       }
     }
   });
 }
 
-// Very simple tweening utility function. This should be replaced with a proper tweening library in a real product.
-const tweening: any[] = [];
-
-function tweenTo(
-  object: any,
-  property: any,
-  target: any,
-  time: any,
-  easing: any,
-  onchange: any,
-  oncomplete: any,
-) {
-  const tween = {
-    object,
-    property,
-    propertyBeginValue: object[property],
-    target,
-    easing,
-    time,
-    change: onchange,
-    complete: oncomplete,
-    start: Date.now(),
-  };
-
-  tweening.push(tween);
-  return tween;
-}
-
 // Listen for animate update.
 app.ticker.add((delta) => {
   const now = Date.now();
+
   const remove = [];
+
   for (let i = 0; i < tweening.length; i++) {
     const t = tweening[i];
     const phase = Math.min(1, (now - t.start) / t.time);
 
-    t.object[t.property] = lerp(
+    t.object[t.property] = utils.lerp(
       t.propertyBeginValue,
       t.target,
       t.easing(phase),
@@ -231,6 +242,7 @@ app.ticker.add((delta) => {
       remove.push(t);
     }
   }
+
   for (let i = 0; i < remove.length; i++) {
     tweening.splice(tweening.indexOf(remove[i]), 1);
   }
