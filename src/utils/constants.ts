@@ -1,5 +1,5 @@
 export enum Constants {
-  BG_COLOR = 0xdfff85,
+  BG_COLOR = 0xffffcb,
   REEL_WIDTH = 180,
   SYMBOL_SIZE = 128,
   APP_WIDTH = 1280,

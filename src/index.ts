@@ -1,17 +1,9 @@
 import * as pixi from 'pixi.js';
 import { BlurFilter } from '@pixi/filter-blur';
-import {
-  stake1,
-  stake10,
-  stake100,
-  stake25,
-  stake5,
-  stake50,
-} from './components/TextItem/StakeText';
+import { createText } from './components/TextItem';
 import { createPlusButton } from './components/PlusButton';
 import { createButton } from './components/Button';
 import { createMinusButton } from './components/MinusButton';
-import { updateStake } from './store/stakes';
 import { downSpinEvent, overSpinEvent } from './store/spin';
 import * as utils from './utils';
 import {
@@ -27,8 +19,6 @@ import {
   Strawberry,
   Taco,
 } from './manifest';
-import { WinText } from './components/TextItem/WinText';
-import { createText } from './components/TextItem/TextItemUI';
 
 const app = new pixi.Application({
   view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -60,7 +50,62 @@ let blurFilter = new BlurFilter(0, 1, window.devicePixelRatio);
 
 const tweening: any[] = [];
 const reels: any[] = [];
-let num = 0;
+let num: number = 0;
+
+// random gain value text display
+let winText = createText('gain:');
+winText.x = 1000;
+winText.y = utils.Constants.TEXT_HEIGHT;
+app.stage.addChild(winText);
+
+let randomWinText = createText(0);
+randomWinText.x = winText.x + 100;
+randomWinText.y = utils.Constants.TEXT_HEIGHT;
+app.stage.addChild(randomWinText);
+
+// stake value display
+let st = createText(`${utils.STAKE_VALUES[0]}`);
+st.x = 260;
+st.y = utils.Constants.TEXT_HEIGHT;
+app.stage.addChild(st);
+
+// create and display +/- stakes button
+const plus = createPlusButton({ app });
+const minus = createMinusButton({ app });
+
+plus.on('click', () => {
+  if (num < 5) {
+    st.destroy();
+
+    num++;
+    st = createText(`${utils.STAKE_VALUES[num]}`);
+    st.x = 260;
+    st.y = utils.Constants.TEXT_HEIGHT;
+    app.stage.addChild(st);
+  } else {
+    return;
+  }
+});
+
+minus.on('click', () => {
+  if (num === 0) {
+    st.destroy();
+    st = createText(`${utils.STAKE_VALUES[num]}`);
+    st.x = 260;
+    st.y = utils.Constants.TEXT_HEIGHT;
+    app.stage.addChild(st);
+  } else if (num <= 5) {
+    st.destroy();
+
+    num--;
+    st = createText(`${utils.STAKE_VALUES[num]}`);
+    st.x = 260;
+    st.y = utils.Constants.TEXT_HEIGHT;
+    app.stage.addChild(st);
+  } else {
+    return;
+  }
+});
 
 function onAssetsLoaded() {
   const slotTextures = [
@@ -144,45 +189,6 @@ function onAssetsLoaded() {
     action: startPlay,
   });
 
-  WinText.x = 1000;
-  WinText.y = utils.Constants.TEXT_HEIGHT;
-  app.stage.addChild(WinText);
-
-  let randomWinText = createText(0);
-  randomWinText.x = WinText.x + 100;
-  randomWinText.y = utils.Constants.TEXT_HEIGHT;
-  app.stage.addChild(randomWinText);
-
-  // add stake value text
-  const stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
-  stakeTxt[num].x = 260;
-  stakeTxt[num].y = utils.Constants.TEXT_HEIGHT;
-  app.stage.addChild(stakeTxt[num]);
-
-  const plus = createPlusButton({ app });
-  const minus = createMinusButton({ app });
-
-  plus.on('click', () => {
-    if (num < utils.STAKE_VALUES.length - 1) {
-      // wip
-      updateStake();
-      stakeTxt[num].destroy();
-      num++;
-
-      stakeTxt[num].x = 260;
-      stakeTxt[num].y = utils.Constants.TEXT_HEIGHT;
-
-      app.stage.addChild(stakeTxt[num]);
-    } else if (num === utils.STAKE_VALUES.length - 1) {
-      num = utils.STAKE_VALUES.length - 1;
-    }
-  });
-
-  // TODO: update stake on minus click
-  minus.on('click', () => {
-    console.log(num);
-  });
-
   // TODO: change to store value
   let running = false;
 
@@ -220,7 +226,7 @@ function onAssetsLoaded() {
       randomWinText = createText(
         `${gainValue <= 9999 ? gainValue : 'enough is enough'}`,
       );
-      randomWinText.x = WinText.x + 100;
+      randomWinText.x = winText.x + 100;
       randomWinText.y = utils.Constants.TEXT_HEIGHT;
 
       app.stage.addChild(randomWinText);
@@ -233,13 +239,13 @@ function onAssetsLoaded() {
     }, 2000);
   }
 
-  // Reels done handler.
+  // reels done handler.
   function reelsComplete() {
     running = false;
     blurFilter.blurYFilter.strength = 0;
   }
 
-  // Listen for animate update.
+  // listen for animate update.
   app.ticker.add((delta) => {
     // Update the slots.
     for (let i = 0; i < reels.length; i++) {
