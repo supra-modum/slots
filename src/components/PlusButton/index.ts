@@ -6,6 +6,10 @@ interface PlusButtonInterface {
   app: pixi.Application;
 }
 
+/**
+ * Create button with "+" symbol
+ * @param params - PlusButtonInterface
+ */
 export const createPlusButton = (params: PlusButtonInterface): pixi.Sprite => {
   const config = {
     x: 360,
