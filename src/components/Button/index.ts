@@ -11,6 +11,10 @@ interface ButtonInterface {
   action: () => void | null;
 }
 
+/**
+ * Add spin (start game) button
+ * @param params - ButtonInterface
+ */
 export const createButton = (params: ButtonInterface): void => {
   const texture = pixi.Texture.from(params.image);
   const hover = pixi.Texture.from(params.hover);

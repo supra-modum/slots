@@ -1,13 +1,4 @@
-import * as pixi from 'pixi.js';
-
-const style = new pixi.TextStyle({
-  fontFamily: ['Arial', 'Inter'],
-  fontSize: 36,
-  fontWeight: 'bold',
-  fill: '#000000',
-});
-
-const createText = (txt: number | string) => new pixi.Text(`${txt}`, style);
+import { createText } from '../TextItemUI';
 
 export const stake1 = createText('1');
 export const stake5 = createText('5');

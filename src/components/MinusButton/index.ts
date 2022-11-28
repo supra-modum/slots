@@ -1,12 +1,18 @@
 import * as pixi from 'pixi.js';
-import {MinusDefault, MinusHover} from '../../manifest';
-import {downMinusStakesEvent, overMinusStakesEvent} from '../../store/stakes';
+import { MinusDefault, MinusHover } from '../../manifest';
+import { downMinusStakesEvent, overMinusStakesEvent } from '../../store/stakes';
 
 interface MinusButtonInterface {
   app: pixi.Application;
 }
 
-export const createMinusButton = (params: MinusButtonInterface): pixi.Sprite => {
+/**
+ * Create button with "-" symbol
+ * @param params - MinusButtonInterface
+ */
+export const createMinusButton = (
+  params: MinusButtonInterface,
+): pixi.Sprite => {
   const config = {
     x: 200,
     y: 600,
@@ -14,7 +20,7 @@ export const createMinusButton = (params: MinusButtonInterface): pixi.Sprite => 
     hover: MinusHover,
     down: downMinusStakesEvent,
     over: overMinusStakesEvent,
-  }
+  };
 
   const texture = pixi.Texture.from(config.image);
   const hover = pixi.Texture.from(config.hover);
@@ -65,4 +71,4 @@ export const createMinusButton = (params: MinusButtonInterface): pixi.Sprite => 
   params.app.stage.addChild(button);
 
   return button;
-}
+};

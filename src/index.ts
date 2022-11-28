@@ -1,9 +1,18 @@
 import * as pixi from 'pixi.js';
-import * as utils from './utils';
 import {
-  updateStake,
-} from './store/stakes';
+  stake1,
+  stake10,
+  stake100,
+  stake25,
+  stake5,
+  stake50,
+} from './components/TextItem/StakeText';
+import { createPlusButton } from './components/PlusButton';
+import { createButton } from './components/Button';
+import { createMinusButton } from './components/MinusButton';
+import { updateStake } from './store/stakes';
 import { downSpinEvent, overSpinEvent } from './store/spin';
+import * as utils from './utils';
 import {
   Apple,
   Bananas,
@@ -11,23 +20,14 @@ import {
   Croissant,
   Donut,
   Eggplant,
-  Taco,
-  Strawberry,
   Peach,
   SpinDefault,
   SpinHover,
+  Strawberry,
+  Taco,
 } from './manifest';
-import {
-  stake1,
-  stake5,
-  stake10,
-  stake25,
-  stake50,
-  stake100,
-} from './components/StakeText';
-import { createPlusButton } from './components/PlusButton';
-import { createButton } from './components/Button';
-import { createMinusButton } from './components/MinusButton';
+import { WinText } from './components/TextItem/WinText';
+import { createText } from './components/TextItem/TextItemUI';
 
 const app = new pixi.Application({
   view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -35,6 +35,7 @@ const app = new pixi.Application({
   width: utils.Constants.APP_WIDTH,
   height: utils.Constants.APP_HEIGHT,
   antialias: true,
+  hello: true, // version check
 });
 
 pixi.Assets.load([
@@ -47,13 +48,18 @@ pixi.Assets.load([
   Taco,
   Strawberry,
   Peach,
-]).then(onAssetsLoaded);
+])
+  .then(onAssetsLoaded)
+  .catch((err) => {
+    console.log(`onAssetLoaded handler error: ${err}`);
+  });
 
 const tweening: any[] = [];
+const reels: any[] = [];
+const reelContainer = new pixi.Container();
+let num = 0;
 
-// onAssetsLoaded handler builds the example.
 function onAssetsLoaded() {
-  // Create different slot symbols.
   const slotTextures = [
     pixi.Texture.from(Apple),
     pixi.Texture.from(Bananas),
@@ -66,13 +72,11 @@ function onAssetsLoaded() {
     pixi.Texture.from(Peach),
   ];
 
-  // Build the reels
-  const reels: any[] = [];
-  const reelContainer = new pixi.Container();
-
+  // build the reels
   for (let i = 0; i < 5; i++) {
     const rc = new pixi.Container();
     rc.x = i * utils.Constants.REEL_WIDTH;
+
     reelContainer.addChild(rc);
 
     const reel = {
@@ -83,33 +87,39 @@ function onAssetsLoaded() {
       previousPosition: 0,
       blur: new pixi.filters.BlurFilter(),
     };
+
     reel.blur.blurX = 0;
     reel.blur.blurY = 0;
     rc.filters = [reel.blur];
 
-    // Build the symbols
+    // build the symbols
     for (let j = 0; j < 3; j++) {
       const symbol = new pixi.Sprite(
         slotTextures[Math.floor(Math.random() * slotTextures.length)],
       );
-      // Scale the symbol to fit symbol area.
+
+      // scale the symbol to fit symbol area.
       symbol.y = j * utils.Constants.SYMBOL_SIZE;
       symbol.scale.x = symbol.scale.y = Math.min(
         utils.Constants.SYMBOL_SIZE / symbol.width,
         utils.Constants.SYMBOL_SIZE / symbol.height,
       );
       symbol.x = Math.round((utils.Constants.SYMBOL_SIZE - symbol.width) / 2);
+
       reel.symbols.push(symbol);
       rc.addChild(symbol);
     }
     reels.push(reel);
   }
+
   app.stage.addChild(reelContainer);
 
-  reelContainer.y = 200;
-  reelContainer.x = 200;
+  reelContainer.x = Math.round(
+    utils.Constants.APP_WIDTH - utils.Constants.REEL_WIDTH * 6,
+  );
+  reelContainer.y =
+    (utils.Constants.APP_HEIGHT - utils.Constants.SYMBOL_SIZE * 3) / 2 + 40;
 
-  // add spin (start game) button
   createButton({
     x: utils.Constants.APP_WIDTH / 2,
     y: 600,
@@ -121,7 +131,14 @@ function onAssetsLoaded() {
     action: startPlay,
   });
 
-  let num = 0;
+  WinText.x = 1000;
+  WinText.y = utils.Constants.APP_HEIGHT - 60;
+  app.stage.addChild(WinText);
+
+  let randomWinText = createText(0);
+  randomWinText.x = WinText.x + 100;
+  randomWinText.y = utils.Constants.APP_HEIGHT - 60;
+  app.stage.addChild(randomWinText);
 
   // add stake value text
   const stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
@@ -129,20 +146,19 @@ function onAssetsLoaded() {
   stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
   app.stage.addChild(stakeTxt[num]);
 
-  // create and return plus button
   const plus = createPlusButton({ app });
-
-  // create and return minus button
   const minus = createMinusButton({ app });
 
   plus.on('click', () => {
     if (num < utils.STAKE_VALUES.length - 1) {
+      // wip
       updateStake();
       stakeTxt[num].destroy();
       num++;
 
       stakeTxt[num].x = 260;
       stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
+
       app.stage.addChild(stakeTxt[num]);
     } else if (num === utils.STAKE_VALUES.length - 1) {
       num = utils.STAKE_VALUES.length - 1;
@@ -154,6 +170,7 @@ function onAssetsLoaded() {
     console.log(num);
   });
 
+  // TODO: change to store value
   let running = false;
 
   function startPlay() {
@@ -176,6 +193,20 @@ function onAssetsLoaded() {
         tweening,
       );
     }
+    setTimeout(() => {
+      randomWinText.destroy();
+
+      let gainValue =
+        Math.floor(Math.random() * 10) + Number(randomWinText.text);
+
+      randomWinText = createText(
+        `${gainValue <= 9999 ? gainValue : 'enough is enough'}`,
+      );
+      randomWinText.x = WinText.x + 100;
+      randomWinText.y = utils.Constants.APP_HEIGHT - 60;
+
+      app.stage.addChild(randomWinText);
+    }, 4000);
   }
 
   // Reels done handler.
