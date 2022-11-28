@@ -1,16 +1,9 @@
 import * as pixi from 'pixi.js';
-import {
-  stake1,
-  stake10,
-  stake100,
-  stake25,
-  stake5,
-  stake50,
-} from './components/TextItem/StakeText';
+import { BlurFilter } from '@pixi/filter-blur';
+import { createText } from './components/TextItem';
 import { createPlusButton } from './components/PlusButton';
 import { createButton } from './components/Button';
 import { createMinusButton } from './components/MinusButton';
-import { updateStake } from './store/stakes';
 import { downSpinEvent, overSpinEvent } from './store/spin';
 import * as utils from './utils';
 import {
@@ -26,8 +19,6 @@ import {
   Strawberry,
   Taco,
 } from './manifest';
-import { WinText } from './components/TextItem/WinText';
-import { createText } from './components/TextItem/TextItemUI';
 
 const app = new pixi.Application({
   view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -54,10 +45,67 @@ pixi.Assets.load([
     console.log(`onAssetLoaded handler error: ${err}`);
   });
 
+const reelContainer = new pixi.Container();
+let blurFilter = new BlurFilter(0, 1, window.devicePixelRatio);
+
 const tweening: any[] = [];
 const reels: any[] = [];
-const reelContainer = new pixi.Container();
-let num = 0;
+let num: number = 0;
+
+// random gain value text display
+let winText = createText('gain:');
+winText.x = 1000;
+winText.y = utils.Constants.TEXT_HEIGHT;
+app.stage.addChild(winText);
+
+let randomWinText = createText(0);
+randomWinText.x = winText.x + 100;
+randomWinText.y = utils.Constants.TEXT_HEIGHT;
+app.stage.addChild(randomWinText);
+
+// stake value display
+let st = createText(`${utils.STAKE_VALUES[0]}`);
+st.x = 260;
+st.y = utils.Constants.TEXT_HEIGHT;
+app.stage.addChild(st);
+
+// create and display +/- stakes button
+const plus = createPlusButton({ app });
+const minus = createMinusButton({ app });
+
+plus.on('click', () => {
+  if (num < 5) {
+    st.destroy();
+
+    num++;
+    st = createText(`${utils.STAKE_VALUES[num]}`);
+    st.x = 260;
+    st.y = utils.Constants.TEXT_HEIGHT;
+    app.stage.addChild(st);
+  } else {
+    return;
+  }
+});
+
+minus.on('click', () => {
+  if (num === 0) {
+    st.destroy();
+    st = createText(`${utils.STAKE_VALUES[num]}`);
+    st.x = 260;
+    st.y = utils.Constants.TEXT_HEIGHT;
+    app.stage.addChild(st);
+  } else if (num <= 5) {
+    st.destroy();
+
+    num--;
+    st = createText(`${utils.STAKE_VALUES[num]}`);
+    st.x = 260;
+    st.y = utils.Constants.TEXT_HEIGHT;
+    app.stage.addChild(st);
+  } else {
+    return;
+  }
+});
 
 function onAssetsLoaded() {
   const slotTextures = [
@@ -90,10 +138,12 @@ function onAssetsLoaded() {
 
     reel.blur.blurX = 0;
     reel.blur.blurY = 0;
-    rc.filters = [reel.blur];
+
+    // instantiates blur filter
+    rc.filters = [blurFilter];
 
     // build the symbols
-    for (let j = 0; j < 3; j++) {
+    for (let j = 0; j < 4; j++) {
       const symbol = new pixi.Sprite(
         slotTextures[Math.floor(Math.random() * slotTextures.length)],
       );
@@ -118,56 +168,25 @@ function onAssetsLoaded() {
     utils.Constants.APP_WIDTH - utils.Constants.REEL_WIDTH * 6,
   );
   reelContainer.y =
-    (utils.Constants.APP_HEIGHT - utils.Constants.SYMBOL_SIZE * 3) / 2 + 40;
+    (utils.Constants.APP_HEIGHT - utils.Constants.SYMBOL_SIZE * 4) / 2;
+
+  const rectMask = new pixi.Graphics();
+  rectMask.beginFill(0);
+  rectMask.drawRect(0, 0, 1280, 600);
+  rectMask.endFill();
+
+  reelContainer.mask = rectMask;
+  reelContainer.addChild(rectMask);
 
   createButton({
     x: utils.Constants.APP_WIDTH / 2,
-    y: 600,
+    y: utils.Constants.BTN_HEIGHT,
     app,
     image: SpinDefault,
     hover: SpinHover,
     down: downSpinEvent,
     over: overSpinEvent,
     action: startPlay,
-  });
-
-  WinText.x = 1000;
-  WinText.y = utils.Constants.APP_HEIGHT - 60;
-  app.stage.addChild(WinText);
-
-  let randomWinText = createText(0);
-  randomWinText.x = WinText.x + 100;
-  randomWinText.y = utils.Constants.APP_HEIGHT - 60;
-  app.stage.addChild(randomWinText);
-
-  // add stake value text
-  const stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
-  stakeTxt[num].x = 260;
-  stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
-  app.stage.addChild(stakeTxt[num]);
-
-  const plus = createPlusButton({ app });
-  const minus = createMinusButton({ app });
-
-  plus.on('click', () => {
-    if (num < utils.STAKE_VALUES.length - 1) {
-      // wip
-      updateStake();
-      stakeTxt[num].destroy();
-      num++;
-
-      stakeTxt[num].x = 260;
-      stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
-
-      app.stage.addChild(stakeTxt[num]);
-    } else if (num === utils.STAKE_VALUES.length - 1) {
-      num = utils.STAKE_VALUES.length - 1;
-    }
-  });
-
-  // TODO: update stake on minus click
-  minus.on('click', () => {
-    console.log(num);
   });
 
   // TODO: change to store value
@@ -179,6 +198,10 @@ function onAssetsLoaded() {
 
     for (let i = 0; i < reels.length; i++) {
       const r = reels[i];
+      // applies blur filter
+      r.filters = [blurFilter];
+      blurFilter.blurYFilter.strength = 3;
+
       const extra = Math.floor(Math.random() * 3);
       const target = r.position + 10 + i * 5 + extra;
       const time = 2500 + i * 600 + extra * 600;
@@ -193,6 +216,7 @@ function onAssetsLoaded() {
         tweening,
       );
     }
+
     setTimeout(() => {
       randomWinText.destroy();
 
@@ -202,19 +226,26 @@ function onAssetsLoaded() {
       randomWinText = createText(
         `${gainValue <= 9999 ? gainValue : 'enough is enough'}`,
       );
-      randomWinText.x = WinText.x + 100;
-      randomWinText.y = utils.Constants.APP_HEIGHT - 60;
+      randomWinText.x = winText.x + 100;
+      randomWinText.y = utils.Constants.TEXT_HEIGHT;
 
       app.stage.addChild(randomWinText);
     }, 4000);
+
+    setTimeout(() => {
+      for (let i = 0; i < reels.length; i++) {
+        blurFilter.blurYFilter.strength = 1;
+      }
+    }, 2000);
   }
 
-  // Reels done handler.
+  // reels done handler.
   function reelsComplete() {
     running = false;
+    blurFilter.blurYFilter.strength = 0;
   }
 
-  // Listen for animate update.
+  // listen for animate update.
   app.ticker.add((delta) => {
     // Update the slots.
     for (let i = 0; i < reels.length; i++) {
@@ -247,30 +278,4 @@ function onAssetsLoaded() {
   });
 }
 
-// Listen for animate update.
-app.ticker.add((delta) => {
-  const now = Date.now();
-
-  const remove = [];
-
-  for (let i = 0; i < tweening.length; i++) {
-    const t = tweening[i];
-    const phase = Math.min(1, (now - t.start) / t.time);
-
-    t.object[t.property] = utils.lerp(
-      t.propertyBeginValue,
-      t.target,
-      t.easing(phase),
-    );
-    if (t.change) t.change(t);
-    if (phase === 1) {
-      t.object[t.property] = t.target;
-      if (t.complete) t.complete(t);
-      remove.push(t);
-    }
-  }
-
-  for (let i = 0; i < remove.length; i++) {
-    tweening.splice(tweening.indexOf(remove[i]), 1);
-  }
-});
+utils.tickerHelper(tweening, app);
