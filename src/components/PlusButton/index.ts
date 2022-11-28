@@ -1,6 +1,7 @@
 import * as pixi from 'pixi.js';
 import { PlusDefault, PlusHover } from '../../manifest';
 import { downPlusStakesEvent, overPlusStakesEvent } from '../../store/stakes';
+import * as utils from '../../utils';
 
 interface PlusButtonInterface {
   app: pixi.Application;
@@ -13,7 +14,7 @@ interface PlusButtonInterface {
 export const createPlusButton = (params: PlusButtonInterface): pixi.Sprite => {
   const config = {
     x: 360,
-    y: 600,
+    y: utils.Constants.APP_HEIGHT - 100,
     image: PlusDefault,
     hover: PlusHover,
     down: downPlusStakesEvent,

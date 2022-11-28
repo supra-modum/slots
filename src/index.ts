@@ -1,4 +1,5 @@
 import * as pixi from 'pixi.js';
+import { BlurFilter } from '@pixi/filter-blur';
 import {
   stake1,
   stake10,
@@ -59,6 +60,8 @@ const reels: any[] = [];
 const reelContainer = new pixi.Container();
 let num = 0;
 
+let blurFilter = new BlurFilter(0, 1, window.devicePixelRatio);
+
 function onAssetsLoaded() {
   const slotTextures = [
     pixi.Texture.from(Apple),
@@ -90,10 +93,12 @@ function onAssetsLoaded() {
 
     reel.blur.blurX = 0;
     reel.blur.blurY = 0;
-    rc.filters = [reel.blur];
+
+    // instantiates blur filter
+    rc.filters = [blurFilter];
 
     // build the symbols
-    for (let j = 0; j < 3; j++) {
+    for (let j = 0; j < 4; j++) {
       const symbol = new pixi.Sprite(
         slotTextures[Math.floor(Math.random() * slotTextures.length)],
       );
@@ -118,11 +123,20 @@ function onAssetsLoaded() {
     utils.Constants.APP_WIDTH - utils.Constants.REEL_WIDTH * 6,
   );
   reelContainer.y =
-    (utils.Constants.APP_HEIGHT - utils.Constants.SYMBOL_SIZE * 3) / 2 + 40;
+    (utils.Constants.APP_HEIGHT - utils.Constants.SYMBOL_SIZE * 4) / 2;
+
+  const rectMask = new pixi.Graphics();
+  rectMask.beginFill(0);
+  rectMask.drawRect(0, 0, 1280, 600);
+  rectMask.endFill();
+
+  // const contr = new pixi.Container();
+  reelContainer.mask = rectMask;
+  reelContainer.addChild(rectMask);
 
   createButton({
     x: utils.Constants.APP_WIDTH / 2,
-    y: 600,
+    y: utils.Constants.APP_HEIGHT - 100,
     app,
     image: SpinDefault,
     hover: SpinHover,
@@ -132,18 +146,18 @@ function onAssetsLoaded() {
   });
 
   WinText.x = 1000;
-  WinText.y = utils.Constants.APP_HEIGHT - 60;
+  WinText.y = utils.Constants.APP_HEIGHT - 120;
   app.stage.addChild(WinText);
 
   let randomWinText = createText(0);
   randomWinText.x = WinText.x + 100;
-  randomWinText.y = utils.Constants.APP_HEIGHT - 60;
+  randomWinText.y = utils.Constants.APP_HEIGHT - 120;
   app.stage.addChild(randomWinText);
 
   // add stake value text
   const stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
   stakeTxt[num].x = 260;
-  stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
+  stakeTxt[num].y = utils.Constants.APP_HEIGHT - 120;
   app.stage.addChild(stakeTxt[num]);
 
   const plus = createPlusButton({ app });
@@ -157,7 +171,7 @@ function onAssetsLoaded() {
       num++;
 
       stakeTxt[num].x = 260;
-      stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
+      stakeTxt[num].y = utils.Constants.APP_HEIGHT - 120;
 
       app.stage.addChild(stakeTxt[num]);
     } else if (num === utils.STAKE_VALUES.length - 1) {
@@ -179,6 +193,10 @@ function onAssetsLoaded() {
 
     for (let i = 0; i < reels.length; i++) {
       const r = reels[i];
+      // applies blur filter
+      r.filters = [blurFilter];
+      blurFilter.blurYFilter.strength = 3;
+
       const extra = Math.floor(Math.random() * 3);
       const target = r.position + 10 + i * 5 + extra;
       const time = 2500 + i * 600 + extra * 600;
@@ -193,6 +211,7 @@ function onAssetsLoaded() {
         tweening,
       );
     }
+
     setTimeout(() => {
       randomWinText.destroy();
 
@@ -203,15 +222,22 @@ function onAssetsLoaded() {
         `${gainValue <= 9999 ? gainValue : 'enough is enough'}`,
       );
       randomWinText.x = WinText.x + 100;
-      randomWinText.y = utils.Constants.APP_HEIGHT - 60;
+      randomWinText.y = utils.Constants.APP_HEIGHT - 120;
 
       app.stage.addChild(randomWinText);
     }, 4000);
+
+    setTimeout(() => {
+      for (let i = 0; i < reels.length; i++) {
+        blurFilter.blurYFilter.strength = 1;
+      }
+    }, 2000);
   }
 
   // Reels done handler.
   function reelsComplete() {
     running = false;
+    blurFilter.blurYFilter.strength = 0;
   }
 
   // Listen for animate update.
