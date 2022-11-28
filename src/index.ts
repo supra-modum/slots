@@ -1,5 +1,4 @@
 import * as pixi from 'pixi.js';
-import { BlurFilter } from '@pixi/filter-blur';
 import {
   stake1,
   stake10,
@@ -55,11 +54,9 @@ pixi.Assets.load([
     console.log(`onAssetLoaded handler error: ${err}`);
   });
 
-const reelContainer = new pixi.Container();
-let blurFilter = new BlurFilter(0, 1, window.devicePixelRatio);
-
 const tweening: any[] = [];
 const reels: any[] = [];
+const reelContainer = new pixi.Container();
 let num = 0;
 
 function onAssetsLoaded() {
@@ -93,12 +90,10 @@ function onAssetsLoaded() {
 
     reel.blur.blurX = 0;
     reel.blur.blurY = 0;
-
-    // instantiates blur filter
-    rc.filters = [blurFilter];
+    rc.filters = [reel.blur];
 
     // build the symbols
-    for (let j = 0; j < 4; j++) {
+    for (let j = 0; j < 3; j++) {
       const symbol = new pixi.Sprite(
         slotTextures[Math.floor(Math.random() * slotTextures.length)],
       );
@@ -123,19 +118,11 @@ function onAssetsLoaded() {
     utils.Constants.APP_WIDTH - utils.Constants.REEL_WIDTH * 6,
   );
   reelContainer.y =
-    (utils.Constants.APP_HEIGHT - utils.Constants.SYMBOL_SIZE * 4) / 2;
-
-  const rectMask = new pixi.Graphics();
-  rectMask.beginFill(0);
-  rectMask.drawRect(0, 0, 1280, 600);
-  rectMask.endFill();
-
-  reelContainer.mask = rectMask;
-  reelContainer.addChild(rectMask);
+    (utils.Constants.APP_HEIGHT - utils.Constants.SYMBOL_SIZE * 3) / 2 + 40;
 
   createButton({
     x: utils.Constants.APP_WIDTH / 2,
-    y: utils.Constants.BTN_HEIGHT,
+    y: 600,
     app,
     image: SpinDefault,
     hover: SpinHover,
@@ -145,18 +132,18 @@ function onAssetsLoaded() {
   });
 
   WinText.x = 1000;
-  WinText.y = utils.Constants.TEXT_HEIGHT;
+  WinText.y = utils.Constants.APP_HEIGHT - 60;
   app.stage.addChild(WinText);
 
   let randomWinText = createText(0);
   randomWinText.x = WinText.x + 100;
-  randomWinText.y = utils.Constants.TEXT_HEIGHT;
+  randomWinText.y = utils.Constants.APP_HEIGHT - 60;
   app.stage.addChild(randomWinText);
 
   // add stake value text
   const stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
   stakeTxt[num].x = 260;
-  stakeTxt[num].y = utils.Constants.TEXT_HEIGHT;
+  stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
   app.stage.addChild(stakeTxt[num]);
 
   const plus = createPlusButton({ app });
@@ -170,7 +157,7 @@ function onAssetsLoaded() {
       num++;
 
       stakeTxt[num].x = 260;
-      stakeTxt[num].y = utils.Constants.TEXT_HEIGHT;
+      stakeTxt[num].y = utils.Constants.APP_HEIGHT - 60;
 
       app.stage.addChild(stakeTxt[num]);
     } else if (num === utils.STAKE_VALUES.length - 1) {
@@ -192,10 +179,6 @@ function onAssetsLoaded() {
 
     for (let i = 0; i < reels.length; i++) {
       const r = reels[i];
-      // applies blur filter
-      r.filters = [blurFilter];
-      blurFilter.blurYFilter.strength = 3;
-
       const extra = Math.floor(Math.random() * 3);
       const target = r.position + 10 + i * 5 + extra;
       const time = 2500 + i * 600 + extra * 600;
@@ -210,7 +193,6 @@ function onAssetsLoaded() {
         tweening,
       );
     }
-
     setTimeout(() => {
       randomWinText.destroy();
 
@@ -221,22 +203,15 @@ function onAssetsLoaded() {
         `${gainValue <= 9999 ? gainValue : 'enough is enough'}`,
       );
       randomWinText.x = WinText.x + 100;
-      randomWinText.y = utils.Constants.TEXT_HEIGHT;
+      randomWinText.y = utils.Constants.APP_HEIGHT - 60;
 
       app.stage.addChild(randomWinText);
     }, 4000);
-
-    setTimeout(() => {
-      for (let i = 0; i < reels.length; i++) {
-        blurFilter.blurYFilter.strength = 1;
-      }
-    }, 2000);
   }
 
   // Reels done handler.
   function reelsComplete() {
     running = false;
-    blurFilter.blurYFilter.strength = 0;
   }
 
   // Listen for animate update.
@@ -272,4 +247,30 @@ function onAssetsLoaded() {
   });
 }
 
-utils.tickerHelper(tweening, app);
+// Listen for animate update.
+app.ticker.add((delta) => {
+  const now = Date.now();
+
+  const remove = [];
+
+  for (let i = 0; i < tweening.length; i++) {
+    const t = tweening[i];
+    const phase = Math.min(1, (now - t.start) / t.time);
+
+    t.object[t.property] = utils.lerp(
+      t.propertyBeginValue,
+      t.target,
+      t.easing(phase),
+    );
+    if (t.change) t.change(t);
+    if (phase === 1) {
+      t.object[t.property] = t.target;
+      if (t.complete) t.complete(t);
+      remove.push(t);
+    }
+  }
+
+  for (let i = 0; i < remove.length; i++) {
+    tweening.splice(tweening.indexOf(remove[i]), 1);
+  }
+});
