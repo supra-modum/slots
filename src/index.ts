@@ -55,12 +55,12 @@ pixi.Assets.load([
     console.log(`onAssetLoaded handler error: ${err}`);
   });
 
+const reelContainer = new pixi.Container();
+let blurFilter = new BlurFilter(0, 1, window.devicePixelRatio);
+
 const tweening: any[] = [];
 const reels: any[] = [];
-const reelContainer = new pixi.Container();
 let num = 0;
-
-let blurFilter = new BlurFilter(0, 1, window.devicePixelRatio);
 
 function onAssetsLoaded() {
   const slotTextures = [
@@ -130,13 +130,12 @@ function onAssetsLoaded() {
   rectMask.drawRect(0, 0, 1280, 600);
   rectMask.endFill();
 
-  // const contr = new pixi.Container();
   reelContainer.mask = rectMask;
   reelContainer.addChild(rectMask);
 
   createButton({
     x: utils.Constants.APP_WIDTH / 2,
-    y: utils.Constants.APP_HEIGHT - 100,
+    y: utils.Constants.BTN_HEIGHT,
     app,
     image: SpinDefault,
     hover: SpinHover,
@@ -146,18 +145,18 @@ function onAssetsLoaded() {
   });
 
   WinText.x = 1000;
-  WinText.y = utils.Constants.APP_HEIGHT - 120;
+  WinText.y = utils.Constants.TEXT_HEIGHT;
   app.stage.addChild(WinText);
 
   let randomWinText = createText(0);
   randomWinText.x = WinText.x + 100;
-  randomWinText.y = utils.Constants.APP_HEIGHT - 120;
+  randomWinText.y = utils.Constants.TEXT_HEIGHT;
   app.stage.addChild(randomWinText);
 
   // add stake value text
   const stakeTxt = [stake1, stake5, stake10, stake25, stake50, stake100];
   stakeTxt[num].x = 260;
-  stakeTxt[num].y = utils.Constants.APP_HEIGHT - 120;
+  stakeTxt[num].y = utils.Constants.TEXT_HEIGHT;
   app.stage.addChild(stakeTxt[num]);
 
   const plus = createPlusButton({ app });
@@ -171,7 +170,7 @@ function onAssetsLoaded() {
       num++;
 
       stakeTxt[num].x = 260;
-      stakeTxt[num].y = utils.Constants.APP_HEIGHT - 120;
+      stakeTxt[num].y = utils.Constants.TEXT_HEIGHT;
 
       app.stage.addChild(stakeTxt[num]);
     } else if (num === utils.STAKE_VALUES.length - 1) {
@@ -222,7 +221,7 @@ function onAssetsLoaded() {
         `${gainValue <= 9999 ? gainValue : 'enough is enough'}`,
       );
       randomWinText.x = WinText.x + 100;
-      randomWinText.y = utils.Constants.APP_HEIGHT - 120;
+      randomWinText.y = utils.Constants.TEXT_HEIGHT;
 
       app.stage.addChild(randomWinText);
     }, 4000);
@@ -273,30 +272,4 @@ function onAssetsLoaded() {
   });
 }
 
-// Listen for animate update.
-app.ticker.add((delta) => {
-  const now = Date.now();
-
-  const remove = [];
-
-  for (let i = 0; i < tweening.length; i++) {
-    const t = tweening[i];
-    const phase = Math.min(1, (now - t.start) / t.time);
-
-    t.object[t.property] = utils.lerp(
-      t.propertyBeginValue,
-      t.target,
-      t.easing(phase),
-    );
-    if (t.change) t.change(t);
-    if (phase === 1) {
-      t.object[t.property] = t.target;
-      if (t.complete) t.complete(t);
-      remove.push(t);
-    }
-  }
-
-  for (let i = 0; i < remove.length; i++) {
-    tweening.splice(tweening.indexOf(remove[i]), 1);
-  }
-});
+utils.tickerHelper(tweening, app);

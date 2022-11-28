@@ -14,7 +14,7 @@ interface PlusButtonInterface {
 export const createPlusButton = (params: PlusButtonInterface): pixi.Sprite => {
   const config = {
     x: 360,
-    y: utils.Constants.APP_HEIGHT - 100,
+    y: utils.Constants.BTN_HEIGHT,
     image: PlusDefault,
     hover: PlusHover,
     down: downPlusStakesEvent,

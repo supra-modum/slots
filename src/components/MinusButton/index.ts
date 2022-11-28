@@ -16,7 +16,7 @@ export const createMinusButton = (
 ): pixi.Sprite => {
   const config = {
     x: 200,
-    y: utils.Constants.APP_HEIGHT - 100,
+    y: utils.Constants.BTN_HEIGHT,
     image: MinusDefault,
     hover: MinusHover,
     down: downMinusStakesEvent,
