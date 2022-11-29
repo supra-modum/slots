@@ -51,14 +51,14 @@ pixi.Assets.load([
   });
 
 const reelContainer = new pixi.Container();
-let blurFilter = new BlurFilter(0, 1, window.devicePixelRatio);
+const blurFilter = new BlurFilter(0, 1, window.devicePixelRatio);
 
 const tweening: any[] = [];
 const reels: any[] = [];
-let num: number = 0;
+let num = 0;
 
 // random gain value text display
-let winText = createText('Gain:');
+const winText = createText('Gain:');
 winText.x = 1000;
 winText.y = utils.Constants.TEXT_HEIGHT;
 app.stage.addChild(winText);
@@ -224,7 +224,7 @@ function onAssetsLoaded() {
     setTimeout(() => {
       randomWinText.destroy();
 
-      let gainValue =
+      const gainValue =
         Math.floor(Math.random() * 10) + Number(randomWinText.text);
 
       randomWinText = createText(

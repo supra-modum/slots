@@ -1,5 +1,9 @@
 .idea
+
+### macOS ###
 .DS_Store
+.AppleDouble
+.LSOverride
 
 # Logs
 logs
