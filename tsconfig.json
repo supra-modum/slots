@@ -11,13 +11,14 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-
+    "allowJs": true
   },
   "include": [
     "./src/**/*.ts",
     "assets"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "spec"
   ]
 }
