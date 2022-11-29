@@ -8,4 +8,4 @@ export enum Constants {
   TEXT_HEIGHT = 680,
 }
 
-export const STAKE_VALUES = [1, 5, 10, 25, 50, 100];
+export const STAKE_VALUES: number[] = [1, 5, 10, 25, 50, 100];

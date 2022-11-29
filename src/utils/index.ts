@@ -1,4 +1,4 @@
-import backout from './backout';
+import backout, { BackoutInterface } from './backout';
 import lerp from './lerp';
 import tweenToFunction from './tween';
 import tickerHelper from './tickerHelper';

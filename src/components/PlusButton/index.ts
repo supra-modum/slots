@@ -1,6 +1,6 @@
 import * as pixi from 'pixi.js';
 import { PlusDefault, PlusHover } from '../../manifest';
-import { downPlusStakesEvent, overPlusStakesEvent } from '../../store/stakes';
+import { downPlusStakesEvent, overPlusStakesEvent } from '../../store';
 import * as utils from '../../utils';
 
 interface PlusButtonInterface {

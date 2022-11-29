@@ -1,11 +1,11 @@
 import { Application } from 'pixi.js';
 import * as utils from './index';
 
-function tickerHelper(tweening: any[], app: Application, delta?: number) {
+function tickerHelper(tweening: any[], app: Application, delta?: number): void {
   app.ticker.add((delta) => {
     const now = Date.now();
 
-    const remove = [];
+    const remove: any[] = [];
 
     for (let i = 0; i < tweening.length; i++) {
       const t = tweening[i];

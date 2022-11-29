@@ -4,7 +4,12 @@ import { createText } from './components/TextItem';
 import { createPlusButton } from './components/PlusButton';
 import { createButton } from './components/Button';
 import { createMinusButton } from './components/MinusButton';
-import { downSpinEvent, overSpinEvent } from './store/spin';
+import {
+  $isRunning,
+  gameRunningEvent,
+  downSpinEvent,
+  overSpinEvent,
+} from './store';
 import * as utils from './utils';
 import {
   Apple,
@@ -53,7 +58,7 @@ const reels: any[] = [];
 let num: number = 0;
 
 // random gain value text display
-let winText = createText('gain:');
+let winText = createText('Gain:');
 winText.x = 1000;
 winText.y = utils.Constants.TEXT_HEIGHT;
 app.stage.addChild(winText);
@@ -170,6 +175,7 @@ function onAssetsLoaded() {
   reelContainer.y =
     (utils.Constants.APP_HEIGHT - utils.Constants.SYMBOL_SIZE * 4) / 2;
 
+  // create mask for reel container
   const rectMask = new pixi.Graphics();
   rectMask.beginFill(0);
   rectMask.drawRect(0, 0, 1280, 600);
@@ -178,6 +184,7 @@ function onAssetsLoaded() {
   reelContainer.mask = rectMask;
   reelContainer.addChild(rectMask);
 
+  // create spin button
   createButton({
     x: utils.Constants.APP_WIDTH / 2,
     y: utils.Constants.BTN_HEIGHT,
@@ -189,12 +196,9 @@ function onAssetsLoaded() {
     action: startPlay,
   });
 
-  // TODO: change to store value
-  let running = false;
-
   function startPlay() {
-    if (running) return;
-    running = true;
+    if ($isRunning.getState() === true) return;
+    gameRunningEvent();
 
     for (let i = 0; i < reels.length; i++) {
       const r = reels[i];
@@ -241,7 +245,7 @@ function onAssetsLoaded() {
 
   // reels done handler.
   function reelsComplete() {
-    running = false;
+    gameRunningEvent();
     blurFilter.blurYFilter.strength = 0;
   }
 

@@ -1,9 +1,11 @@
+import type { BackoutInterface } from './backout';
+
 function tweenToFunction(
-  object: any,
-  property: string | any,
+  object: Record<string, any>,
+  property: string,
   target: number,
   time: number,
-  easing: any,
+  easing: BackoutInterface,
   onchange: any,
   oncomplete: any,
   tweening?: any[],

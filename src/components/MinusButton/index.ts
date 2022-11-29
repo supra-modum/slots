@@ -1,6 +1,7 @@
 import * as pixi from 'pixi.js';
 import { MinusDefault, MinusHover } from '../../manifest';
-import { downMinusStakesEvent, overMinusStakesEvent } from '../../store/stakes';
+import { downMinusStakesEvent, overMinusStakesEvent } from '../../store';
+import * as utils from '../../utils';
 
 interface MinusButtonInterface {
   app: pixi.Application;
@@ -15,7 +16,7 @@ export const createMinusButton = (
 ): pixi.Sprite => {
   const config = {
     x: 200,
-    y: 600,
+    y: utils.Constants.BTN_HEIGHT,
     image: MinusDefault,
     hover: MinusHover,
     down: downMinusStakesEvent,
