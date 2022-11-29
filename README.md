@@ -8,7 +8,7 @@ How to start the game:
 npm install && npm run start
 ```
 
-Then open in browser `http://localhost:1234/`
+Then open in a browser `http://localhost:1234/`
 
 <img src="./screenshot.png" title="screenshot" width="800" alt='screenshot'/>
 
