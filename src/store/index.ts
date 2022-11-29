@@ -4,11 +4,19 @@ import {
   downMinusStakesEvent,
   downPlusStakesEvent,
   overPlusStakesEvent,
+  $isMinusPointerDown,
+  $isMinusPointerOver,
+  $isPlusPointerDown,
+  $isPlusPointerOver,
 } from './stakes';
 import { downSpinEvent, overSpinEvent } from './spin';
 
 export {
   $isRunning,
+  $isMinusPointerDown,
+  $isMinusPointerOver,
+  $isPlusPointerDown,
+  $isPlusPointerOver,
   gameRunningEvent,
   downSpinEvent,
   overSpinEvent,

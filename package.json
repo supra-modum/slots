@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "5x3 Slot Machine Game built with Pixi.js and TypeScript",
   "scripts": {
-    "start": "webpack serve --mode=development --progress",
+    "start": "npm run test && webpack serve --mode=development --progress",
     "build": "run-s clean build-only",
     "build-only": "webpack --mode=production",
     "clean": "rimraf dist",
     "format": "prettier --write src",
-    "test": "jest"
+    "test": "jest --colors"
   },
   "author": "Kateryna Zaslavsky",
   "keywords": [

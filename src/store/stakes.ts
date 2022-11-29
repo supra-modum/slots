@@ -1,10 +1,10 @@
 import { createEvent, createStore } from 'effector';
 
 // +/- button stores and events
-const $isPlusPointerDown = createStore<boolean>(false);
-const $isPlusPointerOver = createStore<boolean>(false);
-const $isMinusPointerDown = createStore<boolean>(false);
-const $isMinusPointerOver = createStore<boolean>(false);
+export const $isPlusPointerDown = createStore<boolean>(false);
+export const $isPlusPointerOver = createStore<boolean>(false);
+export const $isMinusPointerDown = createStore<boolean>(false);
+export const $isMinusPointerOver = createStore<boolean>(false);
 
 export const downPlusStakesEvent = createEvent<boolean>();
 export const overPlusStakesEvent = createEvent<boolean>();
